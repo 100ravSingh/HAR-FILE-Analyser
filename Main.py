@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+
+
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfile
@@ -7,6 +12,8 @@ from haralyzer import HarParser, HarPage
 from openpyxl.workbook import Workbook
 
 import pandas as pd
+import matplotlib.pyplot as plt
+
 har_datas = []
 
 
@@ -14,26 +21,36 @@ har_datas = []
 root = tk.Tk()
 
 root.geometry("500x500") # set the root dimensions
+root.title('HAR Analyzer of Websites')
 root.pack_propagate(False) # tells the root to not let the widgets inside it determine its size.
 # root.resizable(0, 0) # makes the root window fixed in size.
 
 # Frame for TreeView
-frame1 = tk.LabelFrame(root, text="Har Analyzer")
+frame1 = tk.LabelFrame(root, text="Har Analyzer - Components Table")
 frame1.place(height=600, width=1350)
 
 # Frame for open file dialog
-file_frame = tk.LabelFrame(root, text="Open File")
-file_frame.place(height=100, width=400, rely=0.85, relx=0)
+file_frame = tk.LabelFrame(root, text="File Operations")
+file_frame.place(height=100, width=600, rely=0.85, relx=0)
 
 # Buttons
 button1 = tk.Button(file_frame, text="Browse A File", command=lambda: File_dialog())
-button1.place(rely=0.65, relx=0.30)
+button1.place(rely=0.65, relx=0.25)
 
 button2 = tk.Button(file_frame, text="Load File", command=lambda: Load_Har_data())
 button2.place(rely=0.65, relx=0.10)
 
-button3 = tk.Button(file_frame, text="Export to Excel", command=lambda: export_to_excel())
-button3.place(rely=0.65, relx=0.60)
+button3 = tk.Button(file_frame, text="Export File", command=lambda: export_to_excel())
+button3.place(rely=0.65, relx=0.45)
+
+button4 = tk.Button(file_frame, text="Graph", command=lambda: graph())
+button4.place(rely=0.65, relx=0.75)
+
+Box1 = tk.Entry(file_frame,highlightthickness=2,justify = 'center',font = ('courier', 10, 'bold'))
+Box1.place(rely=0.30,relx=0.65)
+
+label_2 = ttk.Label(file_frame, text="Enter row number here",font = ('courier', 10, 'bold'))
+label_2.place(rely=0, relx=0.65)
 
 # The file/file path text
 label_file = ttk.Label(file_frame, text="No File Selected")
@@ -127,8 +144,9 @@ def Load_Har_data():
     # print(har_datas)  
     global df
     df = pd.DataFrame(data=har_datas)
-    df = df.astype({"blocked":'int',"dns":'int',"ssl":'int',"connect":'int',"send":'int',"wait":'int',"receive":'int',"_blocked_queueing":'int'})
-    df = df.rename(columns={"blocked":"blocked (ms)","dns":"dns (ms)","ssl":"ssl (ms)","connect":"connect (ms)","send":"send (ms)","wait":"wait (ms)","receive":"receive (ms)","_blocked_queueing":"_blocked_queueing (ms)"}) 
+    df['Total Time'] = df['Total Time'].str.replace(r'\D', '', regex=True).astype(int)
+    df = df.astype({"Total Time":'int',"blocked":'int',"dns":'int',"ssl":'int',"connect":'int',"send":'int',"wait":'int',"receive":'int',"_blocked_queueing":'int'})
+    df = df.rename(columns={"Total Time":"Total Time (ms)","blocked":"blocked (ms)","dns":"dns (ms)","ssl":"ssl (ms)","connect":"connect (ms)","send":"send (ms)","wait":"wait (ms)","receive":"receive (ms)","_blocked_queueing":"_blocked_queueing (ms)"}) 
   
     clear_data()
     l1 = list(df)
@@ -166,6 +184,29 @@ def clear_data():
     tv1.delete(*tv1.get_children())
     return None
 
+def graph():
+    
+    DF = df.drop(df.columns[[1, 2, 3]], axis=1)
+    DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]].replace(-1, 0)
+    #DF = df.drop(df.columns[[1, 2]], axis=1)
+    #DF[["Total Time (ms)","blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]] = DF[["Total Time (ms)","blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]].replace(-1, 0)
+    #DF = DF[DF.iloc[:, 1:].ne(0).any(axis=1)].reset_index(drop=True)
+    
+
+    for i, (idx, row) in enumerate(DF.set_index('Request Url').iterrows()):
+        if (i+1) == int(Box1.get()):
+            row = row[row.gt(row.sum() * .01)]
+            IDX = idx
+        else:
+            continue
+            
+    plt.pie(row,labels=row.index,autopct='%1.1f%%')
+    plt.title(str(IDX) + "   " + " [Total Time in ms : sum of all components] ")
+    plt.show()
+    
+    
+    
+    
 def export_to_excel():
     files = (('All Files','*.*'),('CSV Files','*.csv'))
     file = asksaveasfile(filetypes=files, defaultextension = files)
@@ -174,3 +215,5 @@ def export_to_excel():
 
 
 root.mainloop()
+
+
