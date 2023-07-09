@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-
-
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfile
@@ -32,6 +30,9 @@ frame1.place(height=600, width=1350)
 # Frame for open file dialog
 file_frame = tk.LabelFrame(root, text="File Operations")
 file_frame.place(height=100, width=600, rely=0.85, relx=0)
+
+label_1 = ttk.Label(root, text="Output Section ",font = ('courier', 10, 'bold'))
+label_1.place(height=100, width=600, rely=0.85, relx=0.60)
 
 # Buttons
 button1 = tk.Button(file_frame, text="Browse A File", command=lambda: File_dialog())
@@ -107,11 +108,9 @@ def Load_Har_data():
 
 
     oncontenttime=data["pages"][0]["pageTimings"]["onContentLoad"]
-    print("Page oncontenttime ="+str(int(oncontenttime)) +" ms")
-
     onload=data["pages"][0]["pageTimings"]["onLoad"]
-
-    print("Page onLoad=" +str(onload) + " ms")
+    
+    label_1.config(text="Page oncontenttime = "+str(int(oncontenttime)) +" ms \n" + "Page onLoad = " +str(onload) + " ms" )
 
 
 
@@ -146,7 +145,7 @@ def Load_Har_data():
     df = pd.DataFrame(data=har_datas)
     df['Total Time'] = df['Total Time'].str.replace(r'\D', '', regex=True).astype(int)
     df = df.astype({"Total Time":'int',"blocked":'int',"dns":'int',"ssl":'int',"connect":'int',"send":'int',"wait":'int',"receive":'int',"_blocked_queueing":'int'})
-    df = df.rename(columns={"Total Time":"Total Time (ms)","blocked":"blocked (ms)","dns":"dns (ms)","ssl":"ssl (ms)","connect":"connect (ms)","send":"send (ms)","wait":"wait (ms)","receive":"receive (ms)","_blocked_queueing":"_blocked_queueing (ms)"}) 
+    df = df.rename(columns={"Total Time":"Total Time (ms)","blocked":"blocked (ms)","dns":"dns (ms)","ssl":"ssl (ms)","connect":"connect (ms)","send":"send (ms)","wait":"wait (ms)","receive":"receive (ms)","_blocked_queueing":"blocked_queueing (ms)"}) 
   
     clear_data()
     l1 = list(df)
@@ -187,7 +186,7 @@ def clear_data():
 def graph():
     
     DF = df.drop(df.columns[[1, 2, 3]], axis=1)
-    DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]].replace(-1, 0)
+    DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]].replace(-1, 0)
     #DF = df.drop(df.columns[[1, 2]], axis=1)
     #DF[["Total Time (ms)","blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]] = DF[["Total Time (ms)","blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]].replace(-1, 0)
     #DF = DF[DF.iloc[:, 1:].ne(0).any(axis=1)].reset_index(drop=True)
@@ -195,14 +194,17 @@ def graph():
 
     for i, (idx, row) in enumerate(DF.set_index('Request Url').iterrows()):
         if (i+1) == int(Box1.get()):
-            row = row[row.gt(row.sum() * .01)]
+            row = row[row.gt(row.sum() * .001)]
             IDX = idx
-        else:
-            continue
-            
-    plt.pie(row,labels=row.index,autopct='%1.1f%%')
-    plt.title(str(IDX) + "   " + " [Total Time in ms : sum of all components] ")
-    plt.show()
+            #plt.pie(row,labels=row.index,autopct='%1.1f%%')
+            plt.pie(row,autopct='%1.1f%%')
+            #plt.legend(pie[0],labels=row.index, bbox_to_anchor=(1,0.5), loc="center right", fontsize=10,bbox_transform=plt.gcf().transFigure)
+            plt.legend(labels=row.index,loc="center right",bbox_to_anchor=(1,0.5), bbox_transform=plt.gcf().transFigure)
+            #plt.legend(loc="center right",labels=row.index)
+            plt.subplots_adjust(left=0.0, bottom=0.1, right=0.80)
+            plt.title(str(IDX) + "   " + " [Total Time in ms : sum of all components] ")
+            plt.show()
+        
     
     
     
