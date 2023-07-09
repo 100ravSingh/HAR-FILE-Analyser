@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfile
+import seaborn as sns
 import json
 from haralyzer import HarParser, HarPage
 
@@ -30,23 +30,27 @@ frame1.place(height=600, width=1300)
 
 # Frame for open file dialog
 file_frame = tk.LabelFrame(root, text="File Operations")
-file_frame.place(height=100, width=600, rely=0.85, relx=0)
+file_frame.place(height=100, width=700, rely=0.85, relx=0)
 
 label_1 = ttk.Label(root, text="Output Section ",font = ('courier', 10, 'bold'))
 label_1.place(height=100, width=600, rely=0.85, relx=0.60)
 
 # Buttons
 button1 = tk.Button(file_frame, text="Browse A File", command=lambda: File_dialog())
-button1.place(rely=0.65, relx=0.10)
+button1.place(rely=0.65, relx=0.05)
 
 button2 = tk.Button(file_frame, text="Load File", command=lambda: Load_Har_data())
-button2.place(rely=0.65, relx=0.30)
+button2.place(rely=0.65, relx=0.20)
 
 button3 = tk.Button(file_frame, text="Export File", command=lambda: export_to_excel())
 button3.place(rely=0.65, relx=0.45)
 
 button4 = tk.Button(file_frame, text="Graph", command=lambda: graph())
 button4.place(rely=0.65, relx=0.75)
+
+button5 = tk.Button(file_frame, text="Time Graph", command=lambda: graph2())
+button5.place(rely=0.65, relx=0.32)
+
 
 Box1 = tk.Entry(file_frame,highlightthickness=2,justify = 'center',font = ('courier', 10, 'bold'))
 Box1.place(rely=0.30,relx=0.65)
@@ -159,10 +163,10 @@ def Load_Har_data():
     tv1["show"] = "headings"
     for i in tv1["columns"]:
         tv1.heading(i, text=i) # let the column heading = column name
-        if(i==1):
-            tv1.column(i,anchor ='l')
-        else:
-            tv1.column(i, anchor ='c')
+        #if(i==1):
+        tv1.column(i,stretch=False,anchor ='c')
+        #else:
+           # tv1.column(i, anchor ='c')
 
         ## Adding data to treeview 
     for dt in r_set:  
@@ -184,6 +188,33 @@ def Load_Har_data():
 def clear_data():
     tv1.delete(*tv1.get_children())
     return None
+
+def graph2():
+    
+    TT = df[df['Total Time (ms)'] != 0]
+    ######## for line graph#############
+    #XX = TT['Total Time (ms)']
+    #YY = TT['Serial No.']
+    #plt.plot(XX, YY, 'o-g')
+    ###############################
+    SF= pd.DataFrame(TT, columns=['Serial No.','Total Time (ms)'])
+    
+    plots = sns.barplot(x="Serial No.", y="Total Time (ms)", data=SF)
+ 
+    # Iterating over the bars one-by-one
+    for bar in plots.patches:
+        plots.annotate(format(bar.get_height(), '0'),
+                   (bar.get_x() + bar.get_width() / 2,
+                    bar.get_height()), ha='center', va='center',
+                   size=5, xytext=(0, 8),
+                   textcoords='offset points')
+    
+    # set axis titles
+    plt.xlabel("URL Serial Number")
+    plt.ylabel("Total Time in ms")
+    # set chart title
+    plt.title("Total Time Chart")
+    plt.show()
 
 def graph():
     
@@ -208,10 +239,20 @@ def graph():
     
     
 def export_to_excel():
-    files = (('All Files','.'),('CSV Files','*.csv'))
-    file = asksaveasfile(filetypes=files, defaultextension = files)
-    if file:
-        df.to_csv(file,index=False)
+    # files = (('All Files','.'),('CSV Files','*.csv'))
+    # file = asksaveasfile(filetypes=files, defaultextension = files)
+    # if file:
+    #     df.to_csv(file,index=False)
+
+
+    save_path = filedialog.asksaveasfilename(defaultextension='.xlsx',filetypes=(("Excel files", "*.xlsx"),("All files", ".") ))
+    
+    if save_path:
+            # Export DataFrame to Excel
+            df.to_excel(save_path, index=False)
+            print('Data exported successfully.')
+
+    button3.pack()      
 
 
 root.mainloop()
