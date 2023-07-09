@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfile
@@ -25,7 +26,7 @@ root.pack_propagate(False) # tells the root to not let the widgets inside it det
 
 # Frame for TreeView
 frame1 = tk.LabelFrame(root, text="Har Analyzer - Components Table")
-frame1.place(height=600, width=1350)
+frame1.place(height=600, width=1300)
 
 # Frame for open file dialog
 file_frame = tk.LabelFrame(root, text="File Operations")
@@ -36,10 +37,10 @@ label_1.place(height=100, width=600, rely=0.85, relx=0.60)
 
 # Buttons
 button1 = tk.Button(file_frame, text="Browse A File", command=lambda: File_dialog())
-button1.place(rely=0.65, relx=0.25)
+button1.place(rely=0.65, relx=0.10)
 
 button2 = tk.Button(file_frame, text="Load File", command=lambda: Load_Har_data())
-button2.place(rely=0.65, relx=0.10)
+button2.place(rely=0.65, relx=0.30)
 
 button3 = tk.Button(file_frame, text="Export File", command=lambda: export_to_excel())
 button3.place(rely=0.65, relx=0.45)
@@ -143,32 +144,33 @@ def Load_Har_data():
     # print(har_datas)  
     global df
     df = pd.DataFrame(data=har_datas)
+    df.insert(0,"Serial No.",range(1,len(df)+1)) 
     df['Total Time'] = df['Total Time'].str.replace(r'\D', '', regex=True).astype(int)
     df = df.astype({"Total Time":'int',"blocked":'int',"dns":'int',"ssl":'int',"connect":'int',"send":'int',"wait":'int',"receive":'int',"_blocked_queueing":'int'})
     df = df.rename(columns={"Total Time":"Total Time (ms)","blocked":"blocked (ms)","dns":"dns (ms)","ssl":"ssl (ms)","connect":"connect (ms)","send":"send (ms)","wait":"wait (ms)","receive":"receive (ms)","_blocked_queueing":"blocked_queueing (ms)"}) 
-  
+    df=df.replace(-1,"None")
     clear_data()
-    l1 = list(df)
+    
     r_set = df.to_numpy().tolist()
-    tv1['height']=20 # Number of rows to display, default is 10
-    tv1['show'] = 'headings' 
-    # column identifiers 
-    tv1["columns"] = l1
-        # Defining headings, other option in tree
-        # width of columns and alignment 
+    
     tag_i = 1
    
-    for i in l1:
-        tv1.column(i, width = 70, anchor ='c')
-        tv1.heading(i, text =i)
+    tv1["column"] = list(df.columns)
+    tv1["show"] = "headings"
+    for i in tv1["columns"]:
+        tv1.heading(i, text=i) # let the column heading = column name
+        if(i==1):
+            tv1.column(i,anchor ='l')
+        else:
+            tv1.column(i, anchor ='c')
 
         ## Adding data to treeview 
     for dt in r_set:  
         v=[r for r in dt] # creating a list from each row 
         if tag_i % 2 == 0:
-            tv1.insert("",'end',iid=v[0],values=v,tags = ('even',))
+            tv1.insert("",'end',values=v,tags = ('even',))
         else:
-            tv1.insert("",'end',iid=v[0],values=v,tags = ('odd',)) # adding row
+            tv1.insert("",'end',values=v,tags = ('odd',)) # adding row
         tag_i = tag_i + 1
 
 
@@ -185,10 +187,9 @@ def clear_data():
 
 def graph():
     
-    DF = df.drop(df.columns[[1, 2, 3]], axis=1)
-    DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]].replace(-1, 0)
-    #DF = df.drop(df.columns[[1, 2]], axis=1)
-    #DF[["Total Time (ms)","blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]] = DF[["Total Time (ms)","blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","_blocked_queueing (ms)"]].replace(-1, 0)
+    #DF = df.drop(df.columns[[1, 2, 3]], axis=1)
+    DF = df.drop(df.columns[[0, 2, 3, 4]], axis=1)
+    DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]].replace("None", 0) 
     #DF = DF[DF.iloc[:, 1:].ne(0).any(axis=1)].reset_index(drop=True)
     
 
@@ -196,13 +197,10 @@ def graph():
         if (i+1) == int(Box1.get()):
             row = row[row.gt(row.sum() * .001)]
             IDX = idx
-            #plt.pie(row,labels=row.index,autopct='%1.1f%%')
-            plt.pie(row,autopct='%1.1f%%')
-            #plt.legend(pie[0],labels=row.index, bbox_to_anchor=(1,0.5), loc="center right", fontsize=10,bbox_transform=plt.gcf().transFigure)
+            plt.pie(row,autopct='%1.1f%%')            
             plt.legend(labels=row.index,loc="center right",bbox_to_anchor=(1,0.5), bbox_transform=plt.gcf().transFigure)
-            #plt.legend(loc="center right",labels=row.index)
             plt.subplots_adjust(left=0.0, bottom=0.1, right=0.80)
-            plt.title(str(IDX) + "   " + " [Total Time in ms : sum of all components] ")
+            plt.title(str(IDX) + "   " + " [Total Time : " + str(df["Total Time (ms)"][i]) + " ms ]")
             plt.show()
         
     
@@ -210,12 +208,10 @@ def graph():
     
     
 def export_to_excel():
-    files = (('All Files','*.*'),('CSV Files','*.csv'))
+    files = (('All Files','.'),('CSV Files','*.csv'))
     file = asksaveasfile(filetypes=files, defaultextension = files)
     if file:
         df.to_csv(file,index=False)
 
 
 root.mainloop()
-
-
