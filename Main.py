@@ -20,7 +20,7 @@ har_datas = []
 root = tk.Tk()
 
 root.geometry("500x500") # set the root dimensions
-root.title('HAR Analyzer of Websites')
+root.title('HAR Analyzer')
 root.pack_propagate(False) # tells the root to not let the widgets inside it determine its size.
 # root.resizable(0, 0) # makes the root window fixed in size.
 
@@ -200,6 +200,7 @@ def graph2():
     SF= pd.DataFrame(TT, columns=['Serial No.','Total Time (ms)'])
     
     plots = sns.barplot(x="Serial No.", y="Total Time (ms)", data=SF)
+    # plots = sns.barplot(x="Total Time (ms)", y="Serial No.", data=SF)
  
     # Iterating over the bars one-by-one
     for bar in plots.patches:
@@ -208,12 +209,17 @@ def graph2():
                     bar.get_height()), ha='center', va='center',
                    size=5, xytext=(0, 8),
                    textcoords='offset points')
+
+        plt.xticks(rotation=90)           
+
+                   
     
     # set axis titles
     plt.xlabel("URL Serial Number")
     plt.ylabel("Total Time in ms")
     # set chart title
     plt.title("Total Time Chart")
+    plt.tight_layout()
     plt.show()
 
 def graph():
@@ -244,15 +250,21 @@ def export_to_excel():
     # if file:
     #     df.to_csv(file,index=False)
 
-
-    save_path = filedialog.asksaveasfilename(defaultextension='.xlsx',filetypes=(("Excel files", "*.xlsx"),("All files", ".") ))
+    try:
+        
+        save_path = filedialog.asksaveasfilename(defaultextension='.xlsx',filetypes=(("Excel files", "*.xlsx"),("All files", ".") ))
     
-    if save_path:
+        if save_path:
+
             # Export DataFrame to Excel
             df.to_excel(save_path, index=False)
             print('Data exported successfully.')
 
-    button3.pack()      
+
+
+    except FileNotFoundError:
+        tk.messagebox.showerror("Information", "Please upload the file first")
+        return None          
 
 
 root.mainloop()
