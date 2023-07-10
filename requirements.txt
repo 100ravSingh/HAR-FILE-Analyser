@@ -4,3 +4,4 @@ argparse==1.4.0
 tikzplotlib>=0.9.3
 haralyzer>=1.9.0
 openpyxl>=3.1.2
+seaborn>=0.12.2
