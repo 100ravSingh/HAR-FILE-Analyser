@@ -6,6 +6,7 @@ from tkinter import filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfile
 import seaborn as sns
 import json
+import re
 from haralyzer import HarParser, HarPage
 
 from openpyxl.workbook import Workbook
@@ -192,15 +193,9 @@ def clear_data():
 def graph2():
     
     TT = df[df['Total Time (ms)'] != 0]
-    ######## for line graph#############
-    #XX = TT['Total Time (ms)']
-    #YY = TT['Serial No.']
-    #plt.plot(XX, YY, 'o-g')
-    ###############################
     SF= pd.DataFrame(TT, columns=['Serial No.','Total Time (ms)'])
     
     plots = sns.barplot(x="Serial No.", y="Total Time (ms)", data=SF)
-    # plots = sns.barplot(x="Total Time (ms)", y="Serial No.", data=SF)
  
     # Iterating over the bars one-by-one
     for bar in plots.patches:
@@ -245,20 +240,22 @@ def graph():
     
     
 def export_to_excel():
-    # files = (('All Files','.'),('CSV Files','*.csv'))
-    # file = asksaveasfile(filetypes=files, defaultextension = files)
-    # if file:
-    #     df.to_csv(file,index=False)
+
 
     try:
         
-        save_path = filedialog.asksaveasfilename(defaultextension='.xlsx',filetypes=(("Excel files", "*.xlsx"),("All files", ".") ))
+        files = (("Excel files", "*.xlsx"),('CSV Files','*.csv'))
+        save_path = filedialog.asksaveasfilename(defaultextension=files,filetypes=files )
     
         if save_path:
-
-            # Export DataFrame to Excel
-            df.to_excel(save_path, index=False)
-            print('Data exported successfully.')
+            if re.search("\.xlsx$", save_path):
+                # Export DataFrame to Excel
+                df.to_excel(save_path, index=False)
+                
+            elif re.search("\.csv$", save_path):
+                # Export DataFrame to CSV
+                df.to_csv(save_path,index=False)
+            
 
 
 
