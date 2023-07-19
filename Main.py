@@ -21,7 +21,7 @@ har_datas = []
 root = tk.Tk()
 
 root.geometry("500x500") # set the root dimensions
-root.title('HAR Analyzer')
+root.title('HAR Tool')
 root.pack_propagate(False) # tells the root to not let the widgets inside it determine its size.
 # root.resizable(0, 0) # makes the root window fixed in size.
 
@@ -154,6 +154,7 @@ def Load_Har_data():
     df = df.astype({"Total Time":'int',"blocked":'int',"dns":'int',"ssl":'int',"connect":'int',"send":'int',"wait":'int',"receive":'int',"_blocked_queueing":'int'})
     df = df.rename(columns={"Total Time":"Total Time (ms)","blocked":"blocked (ms)","dns":"dns (ms)","ssl":"ssl (ms)","connect":"connect (ms)","send":"send (ms)","wait":"wait (ms)","receive":"receive (ms)","_blocked_queueing":"blocked_queueing (ms)"}) 
     df=df.replace(-1,"None")
+    df=df.iloc[:, [0,1,2,3,4,5,6,8,9,10,11,7,12]]
     clear_data()
     
     r_set = df.to_numpy().tolist()
@@ -220,8 +221,10 @@ def graph2():
 def graph():
     
     #DF = df.drop(df.columns[[1, 2, 3]], axis=1)
-    DF = df.drop(df.columns[[0, 2, 3, 4]], axis=1)
-    DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]].replace("None", 0) 
+    DF = df.drop(df.columns[[0, 2, 3, 4, 11, 12]], axis=1)
+    DF[["blocked (ms)","dns (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)"]] = DF[["blocked (ms)","dns (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)"]].replace("None", 0)
+    #DF = df.drop(df.columns[[0, 2, 3, 4]], axis=1)
+    #DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]] = DF[["blocked (ms)","dns (ms)","ssl (ms)","connect (ms)","send (ms)","wait (ms)","receive (ms)","blocked_queueing (ms)"]].replace("None", 0) 
     #DF = DF[DF.iloc[:, 1:].ne(0).any(axis=1)].reset_index(drop=True)
     
 
