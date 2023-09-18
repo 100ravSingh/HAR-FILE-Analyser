@@ -33,7 +33,7 @@ frame1.place(height=600, width=1300)
 file_frame = tk.LabelFrame(root, text="File Operations")
 file_frame.place(height=100, width=700, rely=0.85, relx=0)
 
-label_1 = ttk.Label(root, text="Output Section ",font = ('courier', 10, 'bold'))
+label_1 = ttk.Label(root, text="Developed by Sourav Singh. ",font = ('courier', 10, 'bold'))
 label_1.place(height=100, width=600, rely=0.85, relx=0.60)
 
 # Buttons
@@ -113,10 +113,10 @@ def Load_Har_data():
     
 
 
-    oncontenttime=data["pages"][0]["pageTimings"]["onContentLoad"]
-    onload=data["pages"][0]["pageTimings"]["onLoad"]
+#     oncontenttime=data["pages"][0]["pageTimings"]["onContentLoad"]
+#     onload=data["pages"][0]["pageTimings"]["onLoad"]
     
-    label_1.config(text="Page oncontenttime = "+str(int(oncontenttime)) +" ms \n" + "Page onLoad = " +str(onload) + " ms" )
+    label_1.config(text="This Application Designed by Sourav Singh." )
 
 
 
